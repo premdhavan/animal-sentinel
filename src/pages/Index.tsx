@@ -3,29 +3,54 @@ import { Camera, CameraOff, Radio } from "lucide-react";
 import { useCamera } from "@/hooks/useCamera";
 import { useAlarm } from "@/hooks/useAlarm";
 import { useAnimalDetection } from "@/hooks/useAnimalDetection";
+import { useNightMode } from "@/hooks/useNightMode";
+import { useGeoLocation } from "@/hooks/useGeoLocation";
 import { CameraView } from "@/components/CameraView";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DetectionLog } from "@/components/DetectionLog";
+import { GeoFencePanel } from "@/components/GeoFencePanel";
+import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 
-const SCAN_INTERVAL = 5000; // 5 seconds between scans
+const SCAN_INTERVAL = 5000;
 
 const Index = () => {
   const { videoRef, canvasRef, isActive, error, startCamera, stopCamera, captureFrame } = useCamera();
   const { startAlarm, stopAlarm } = useAlarm();
   const { currentDetection, logs, isAnalyzing, analyze, clearLogs } = useAnimalDetection();
+  const { isNightMode, detectBrightness, enhanceNightImage } = useNightMode();
+  const { location, locationError, zones, isInsideGeoFence, addZone, removeZone } = useGeoLocation();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isMonitoring, setIsMonitoring] = useState(false);
 
   const runDetection = useCallback(async () => {
     const frame = captureFrame();
-    if (!frame) return;
-    const result = await analyze(frame);
-    if (result.category === "harmful") {
-      startAlarm();
+    if (!frame || !canvasRef.current) return;
+
+    // Detect night mode from canvas brightness
+    const nightDetected = detectBrightness(canvasRef.current);
+
+    // If night mode, enhance the image before sending
+    let imageToSend = frame;
+    if (nightDetected && canvasRef.current) {
+      // Re-draw original frame first for enhancement
+      const video = videoRef.current;
+      if (video) {
+        const ctx = canvasRef.current.getContext("2d");
+        if (ctx) ctx.drawImage(video, 0, 0);
+      }
+      imageToSend = enhanceNightImage(canvasRef.current);
+    }
+
+    const result = await analyze(imageToSend, nightDetected, location, isInsideGeoFence);
+
+    if (result.riskLevel === "high") {
+      startAlarm("high");
+    } else if (result.riskLevel === "medium") {
+      startAlarm("medium");
     } else {
       stopAlarm();
     }
-  }, [captureFrame, analyze, startAlarm, stopAlarm]);
+  }, [captureFrame, canvasRef, videoRef, detectBrightness, enhanceNightImage, analyze, location, isInsideGeoFence, startAlarm, stopAlarm]);
 
   const startMonitoring = useCallback(async () => {
     await startCamera();
@@ -42,10 +67,8 @@ const Index = () => {
     }
   }, [stopCamera, stopAlarm]);
 
-  // Start scanning loop when camera is active
   useEffect(() => {
     if (isActive && isMonitoring) {
-      // Initial scan after short delay for camera to warm up
       const timeout = setTimeout(() => {
         runDetection();
         intervalRef.current = setInterval(runDetection, SCAN_INTERVAL);
@@ -61,33 +84,44 @@ const Index = () => {
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
       <header className="border-b border-border bg-secondary px-6 py-3">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Radio className="h-5 w-5 text-primary" />
             <h1 className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-primary">
               Wildlife Sentinel
             </h1>
           </div>
-          <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-            <span className={`h-2 w-2 rounded-full ${isActive ? "bg-safe" : "bg-muted-foreground"}`} />
-            {isActive ? "SYSTEM ACTIVE" : "STANDBY"}
+          <div className="flex items-center gap-4 font-mono text-[10px] text-muted-foreground">
+            {isNightMode && isActive && (
+              <span className="rounded bg-primary/20 px-2 py-0.5 text-primary">NIGHT MODE</span>
+            )}
+            {location && (
+              <span className="hidden sm:inline">
+                📍 {location.lat.toFixed(2)}, {location.lng.toFixed(2)}
+              </span>
+            )}
+            <div className="flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${isActive ? "bg-safe" : "bg-muted-foreground"}`} />
+              {isActive ? "SYSTEM ACTIVE" : "STANDBY"}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main content */}
-      <main className="mx-auto flex w-full max-w-6xl flex-1 gap-4 p-4 lg:p-6">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 gap-4 p-4 lg:p-6">
         {/* Left: Camera + Status */}
         <div className="flex flex-1 flex-col gap-4">
-          <CameraView ref={videoRef} isActive={isActive} category={currentDetection.category} />
+          <CameraView ref={videoRef} isActive={isActive} riskLevel={currentDetection.riskLevel} isNightMode={isNightMode && isActive} />
           <canvas ref={canvasRef} className="hidden" />
 
-          {/* Status */}
           <StatusBadge
-            category={currentDetection.category}
+            riskLevel={currentDetection.riskLevel}
             animal={currentDetection.animal}
             confidence={currentDetection.confidence}
+            estimatedDistance={currentDetection.estimatedDistance}
             isAnalyzing={isAnalyzing}
+            isNightMode={isNightMode && isActive}
           />
 
           {/* Controls */}
@@ -118,15 +152,31 @@ const Index = () => {
           )}
         </div>
 
-        {/* Right: Detection Log */}
-        <div className="hidden w-72 flex-shrink-0 lg:block">
+        {/* Right: Panels */}
+        <div className="hidden w-80 flex-shrink-0 space-y-4 lg:block">
           <DetectionLog logs={logs} onClear={clearLogs} />
+          <GeoFencePanel
+            zones={zones}
+            location={location}
+            locationError={locationError}
+            onAddZone={addZone}
+            onRemoveZone={removeZone}
+          />
+          <AnalyticsPanel />
         </div>
       </main>
 
-      {/* Mobile log */}
-      <div className="border-t border-border p-4 lg:hidden">
+      {/* Mobile panels */}
+      <div className="space-y-4 border-t border-border p-4 lg:hidden">
         <DetectionLog logs={logs} onClear={clearLogs} />
+        <GeoFencePanel
+          zones={zones}
+          location={location}
+          locationError={locationError}
+          onAddZone={addZone}
+          onRemoveZone={removeZone}
+        />
+        <AnalyticsPanel />
       </div>
     </div>
   );

@@ -1,16 +1,20 @@
 import { forwardRef } from "react";
+import type { RiskLevel } from "@/hooks/useAnimalDetection";
 
 interface CameraViewProps {
   isActive: boolean;
-  category: "harmful" | "safe" | "none";
+  riskLevel: RiskLevel;
+  isNightMode: boolean;
 }
 
 export const CameraView = forwardRef<HTMLVideoElement, CameraViewProps>(
-  ({ isActive, category }, ref) => {
+  ({ isActive, riskLevel, isNightMode }, ref) => {
     const borderColor =
-      category === "harmful"
+      riskLevel === "high"
         ? "border-danger shadow-[0_0_30px_hsl(var(--danger)/0.4)]"
-        : category === "safe"
+        : riskLevel === "medium"
+        ? "border-warning shadow-[0_0_30px_hsl(var(--warning)/0.3)]"
+        : riskLevel === "low"
         ? "border-safe shadow-[0_0_30px_hsl(var(--safe)/0.2)]"
         : "border-border";
 
@@ -21,9 +25,13 @@ export const CameraView = forwardRef<HTMLVideoElement, CameraViewProps>(
           autoPlay
           playsInline
           muted
-          className="h-full w-full object-cover bg-secondary"
+          className={`h-full w-full object-cover bg-secondary ${isNightMode ? "brightness-150 contrast-125 saturate-0 hue-rotate-[90deg]" : ""}`}
           style={{ minHeight: 320 }}
         />
+        {/* Night mode overlay */}
+        {isActive && isNightMode && (
+          <div className="pointer-events-none absolute inset-0 bg-primary/10 mix-blend-screen" />
+        )}
         {/* Scanline overlay */}
         {isActive && (
           <div className="pointer-events-none absolute inset-0">
@@ -44,11 +52,18 @@ export const CameraView = forwardRef<HTMLVideoElement, CameraViewProps>(
             </p>
           </div>
         )}
-        {/* REC indicator */}
+        {/* Status indicators */}
         {isActive && (
-          <div className="absolute right-4 top-4 flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-danger animate-blink" />
-            <span className="font-mono text-[10px] font-bold text-danger">REC</span>
+          <div className="absolute right-4 top-4 flex items-center gap-3">
+            {isNightMode && (
+              <span className="rounded bg-primary/20 px-2 py-0.5 font-mono text-[10px] font-bold text-primary">
+                NIGHT
+              </span>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-danger animate-blink" />
+              <span className="font-mono text-[10px] font-bold text-danger">REC</span>
+            </div>
           </div>
         )}
       </div>
