@@ -14,7 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      detection_history: {
+        Row: {
+          animal: string
+          confidence: number
+          created_at: string
+          estimated_distance: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          night_mode: boolean
+          risk_level: string
+        }
+        Insert: {
+          animal: string
+          confidence?: number
+          created_at?: string
+          estimated_distance?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          night_mode?: boolean
+          risk_level: string
+        }
+        Update: {
+          animal?: string
+          confidence?: number
+          created_at?: string
+          estimated_distance?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          night_mode?: boolean
+          risk_level?: string
+        }
+        Relationships: []
+      }
+      geo_fence_zones: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          latitude: number
+          longitude: number
+          name: string
+          radius_meters: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          latitude: number
+          longitude: number
+          name: string
+          radius_meters?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          latitude?: number
+          longitude?: number
+          name?: string
+          radius_meters?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

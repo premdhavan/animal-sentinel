@@ -1,10 +1,16 @@
-import { Trash2 } from "lucide-react";
+import { Trash2, Ruler } from "lucide-react";
 import type { DetectionLog as LogEntry } from "@/hooks/useAnimalDetection";
 
 interface DetectionLogProps {
   logs: LogEntry[];
   onClear: () => void;
 }
+
+const riskColors: Record<string, string> = {
+  high: "bg-danger/10 text-danger",
+  medium: "bg-warning/10 text-warning",
+  low: "bg-safe/10 text-safe",
+};
 
 export function DetectionLog({ logs, onClear }: DetectionLogProps) {
   return (
@@ -28,16 +34,18 @@ export function DetectionLog({ logs, onClear }: DetectionLogProps) {
           logs.map((log) => (
             <div
               key={log.id}
-              className={`flex items-center justify-between rounded px-3 py-1.5 font-mono text-xs ${
-                log.category === "harmful"
-                  ? "bg-danger/10 text-danger"
-                  : "bg-safe/10 text-safe"
-              }`}
+              className={`flex items-center justify-between rounded px-3 py-1.5 font-mono text-xs ${riskColors[log.riskLevel] || ""}`}
             >
-              <span className="font-semibold uppercase">{log.animal}</span>
-              <span className="text-[10px] opacity-70">
-                {log.timestamp.toLocaleTimeString()} • {log.confidence}%
-              </span>
+              <div>
+                <span className="font-semibold uppercase">{log.animal}</span>
+                <span className="ml-1 text-[10px] uppercase opacity-60">[{log.riskLevel}]</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] opacity-70">
+                {log.estimatedDistance && (
+                  <span className="inline-flex items-center gap-0.5"><Ruler className="h-2.5 w-2.5" />{log.estimatedDistance}</span>
+                )}
+                <span>{log.timestamp.toLocaleTimeString()} • {log.confidence}%</span>
+              </div>
             </div>
           ))
         )}

@@ -5,8 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const HARMFUL_ANIMALS = ["tiger", "lion", "cheetah", "wolf", "fox", "bear", "leopard", "panther", "hyena", "wild boar"];
-const SAFE_ANIMALS = ["dog", "cat", "cow", "horse", "goat", "sheep", "rabbit", "chicken", "duck", "donkey", "pig", "hamster", "parrot", "pigeon"];
+const HIGH_RISK = ["tiger", "lion", "cheetah", "bear", "leopard", "panther"];
+const MEDIUM_RISK = ["wolf", "hyena", "wild boar"];
+const LOW_RISK = ["fox", "dog", "cat", "cow", "horse", "goat", "sheep", "rabbit", "chicken", "duck", "donkey", "pig", "hamster", "parrot", "pigeon"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,9 +15,13 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64 } = await req.json();
+    const { imageBase64, nightMode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const nightModeNote = nightMode
+      ? "NOTE: This image was captured in low-light/night conditions. Enhanced processing has been applied. Be extra careful in detection."
+      : "";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -29,16 +34,19 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an animal detection system for safety monitoring. Analyze the image and detect any animals present.
-
-HARMFUL animals: ${HARMFUL_ANIMALS.join(", ")}
-SAFE animals: ${SAFE_ANIMALS.join(", ")}
+            content: `You are an animal detection and distance estimation system for safety monitoring. Analyze the image and detect any animals present.
+${nightModeNote}
+RISK LEVELS:
+- HIGH RISK: ${HIGH_RISK.join(", ")}
+- MEDIUM RISK: ${MEDIUM_RISK.join(", ")}
+- LOW RISK: ${LOW_RISK.join(", ")}
 
 You MUST respond with ONLY a JSON object, no markdown, no extra text:
-{"detected": true/false, "animal": "name or null", "category": "harmful"/"safe"/"none", "confidence": 0-100}
+{"detected": true/false, "animal": "name or null", "riskLevel": "high"/"medium"/"low"/"none", "confidence": 0-100, "estimatedDistance": "approximate distance string like '~5 meters' or '~20 meters' or null if no animal"}
 
-If no animal is visible, respond: {"detected": false, "animal": null, "category": "none", "confidence": 0}
-If an animal not in either list is detected, classify it as "safe" if it's a domesticated/pet animal, or "harmful" if it's a wild predator.`
+If no animal is visible, respond: {"detected": false, "animal": null, "riskLevel": "none", "confidence": 0, "estimatedDistance": null}
+If an animal not in any list is detected, classify risk based on whether it's a wild predator (high), aggressive wild animal (medium), or domesticated/pet (low).
+Estimate distance based on the animal's apparent size relative to the frame - larger = closer.`
           },
           {
             role: "user",
@@ -69,14 +77,13 @@ If an animal not in either list is detected, classify it as "safe" if it's a dom
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
-    
-    // Parse JSON from response, handling potential markdown wrapping
+
     let result;
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { detected: false, animal: null, category: "none", confidence: 0 };
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { detected: false, animal: null, riskLevel: "none", confidence: 0, estimatedDistance: null };
     } catch {
-      result = { detected: false, animal: null, category: "none", confidence: 0 };
+      result = { detected: false, animal: null, riskLevel: "none", confidence: 0, estimatedDistance: null };
     }
 
     return new Response(JSON.stringify(result), {
