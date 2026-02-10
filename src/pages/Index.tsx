@@ -15,7 +15,7 @@ const SCAN_INTERVAL = 5000;
 
 const Index = () => {
   const { videoRef, canvasRef, isActive, error, startCamera, stopCamera, captureFrame } = useCamera();
-  const { startAlarm, stopAlarm } = useAlarm();
+  const { initAudio, startAlarm, stopAlarm } = useAlarm();
   const { currentDetection, logs, isAnalyzing, analyze, clearLogs } = useAnimalDetection();
   const { isNightMode, detectBrightness, enhanceNightImage } = useNightMode();
   const { location, locationError, zones, isInsideGeoFence, addZone, removeZone } = useGeoLocation();
@@ -53,9 +53,10 @@ const Index = () => {
   }, [captureFrame, canvasRef, videoRef, detectBrightness, enhanceNightImage, analyze, location, isInsideGeoFence, startAlarm, stopAlarm]);
 
   const startMonitoring = useCallback(async () => {
+    initAudio(); // Initialize AudioContext on user gesture
     await startCamera();
     setIsMonitoring(true);
-  }, [startCamera]);
+  }, [startCamera, initAudio]);
 
   const stopMonitoring = useCallback(() => {
     stopCamera();
