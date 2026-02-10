@@ -146,6 +146,28 @@ const Index = () => {
             )}
           </div>
 
+          {/* Test Alarm Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { initAudio(); startAlarm("high"); }}
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-danger/50 bg-danger/10 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-danger transition-all hover:bg-danger/20"
+            >
+              🔊 Test High Alarm
+            </button>
+            <button
+              onClick={() => { initAudio(); startAlarm("medium"); }}
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-warning/50 bg-warning/10 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-warning transition-all hover:bg-warning/20"
+            >
+              🔔 Test Medium Alarm
+            </button>
+            <button
+              onClick={() => stopAlarm()}
+              className="flex items-center justify-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-all hover:bg-muted"
+            >
+              🔇 Stop
+            </button>
+          </div>
+
           {error && (
             <p className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 font-mono text-xs text-danger">
               {error}
