@@ -11,7 +11,7 @@ import { DetectionLog } from "@/components/DetectionLog";
 import { GeoFencePanel } from "@/components/GeoFencePanel";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 
-const SCAN_INTERVAL = 12000;
+const SCAN_INTERVAL = 5000;
 
 const Index = () => {
   const { videoRef, canvasRef, isActive, error, startCamera, stopCamera, captureFrame } = useCamera();

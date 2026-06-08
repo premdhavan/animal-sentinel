@@ -25,7 +25,6 @@ export type Database = {
           longitude: number | null
           night_mode: boolean
           risk_level: string
-          user_id: string
         }
         Insert: {
           animal: string
@@ -37,7 +36,6 @@ export type Database = {
           longitude?: number | null
           night_mode?: boolean
           risk_level: string
-          user_id?: string
         }
         Update: {
           animal?: string
@@ -49,7 +47,6 @@ export type Database = {
           longitude?: number | null
           night_mode?: boolean
           risk_level?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -62,7 +59,6 @@ export type Database = {
           longitude: number
           name: string
           radius_meters: number
-          user_id: string
         }
         Insert: {
           created_at?: string
@@ -72,7 +68,6 @@ export type Database = {
           longitude: number
           name: string
           radius_meters?: number
-          user_id?: string
         }
         Update: {
           created_at?: string
@@ -82,7 +77,6 @@ export type Database = {
           longitude?: number
           name?: string
           radius_meters?: number
-          user_id?: string
         }
         Relationships: []
       }
