@@ -16,6 +16,24 @@ serve(async (req) => {
 
   try {
     const { imageBase64, nightMode } = await req.json();
+
+    // Input validation
+    if (typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image/")) {
+      return new Response(JSON.stringify({ error: "Invalid image payload" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (imageBase64.length > 2_000_000) {
+      return new Response(JSON.stringify({ error: "Payload too large" }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (nightMode !== undefined && typeof nightMode !== "boolean") {
+      return new Response(JSON.stringify({ error: "Invalid nightMode" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
