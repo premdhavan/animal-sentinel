@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
-import { Camera, CameraOff, Radio } from "lucide-react";
+import { Camera, CameraOff, Radio, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { useCamera } from "@/hooks/useCamera";
 import { useAlarm } from "@/hooks/useAlarm";
 import { useAnimalDetection } from "@/hooks/useAnimalDetection";
@@ -14,6 +15,7 @@ import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 const SCAN_INTERVAL = 5000;
 
 const Index = () => {
+  const { user, signOut } = useAuth();
   const { videoRef, canvasRef, isActive, error, startCamera, stopCamera, captureFrame } = useCamera();
   const { initAudio, startAlarm, stopAlarm } = useAlarm();
   const { currentDetection, logs, isAnalyzing, analyze, clearLogs } = useAnimalDetection();
@@ -105,6 +107,16 @@ const Index = () => {
               <span className={`h-2 w-2 rounded-full ${isActive ? "bg-safe" : "bg-muted-foreground"}`} />
               {isActive ? "SYSTEM ACTIVE" : "STANDBY"}
             </div>
+            {user && (
+              <button
+                onClick={signOut}
+                className="flex items-center gap-1.5 rounded border border-border bg-background/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+                title={user.email ?? "Sign out"}
+              >
+                <LogOut className="h-3 w-3" />
+                Sign Out
+              </button>
+            )}
           </div>
         </div>
       </header>
