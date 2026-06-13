@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    --background: 220 15% 14%;
-    --foreground: 150 80% 75%;
+    --background: 218 20% 22%;
+    --foreground: 150 70% 82%;
 
-    --card: 220 15% 18%;
-    --card-foreground: 150 60% 80%;
+    --card: 218 16% 28%;
+    --card-foreground: 150 60% 85%;
 
-    --popover: 220 15% 18%;
-    --popover-foreground: 150 60% 80%;
+    --popover: 218 16% 28%;
+    --popover-foreground: 150 60% 85%;
 
     --primary: 150 80% 45%;
-    --primary-foreground: 220 20% 6%;
+    --primary-foreground: 218 20% 12%;
 
-    --secondary: 220 12% 22%;
-    --secondary-foreground: 150 40% 70%;
+    --secondary: 218 14% 34%;
+    --secondary-foreground: 150 40% 75%;
 
-    --muted: 220 12% 20%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 218 12% 30%;
+    --muted-foreground: 214 15% 60%;
 
-    --accent: 150 60% 30%;
-    --accent-foreground: 150 80% 85%;
+    --accent: 150 60% 35%;
+    --accent-foreground: 150 80% 90%;
 
     --destructive: 0 85% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -35,27 +35,27 @@
     --danger-glow: 0 85% 45%;
 
     --safe: 150 80% 45%;
-    --safe-foreground: 220 20% 6%;
+    --safe-foreground: 218 20% 12%;
     --safe-glow: 150 80% 35%;
 
     --warning: 45 100% 55%;
-    --warning-foreground: 220 20% 6%;
+    --warning-foreground: 218 20% 12%;
 
     --scanner: 150 80% 50%;
 
-    --border: 150 20% 26%;
-    --input: 220 12% 26%;
+    --border: 216 14% 36%;
+    --input: 218 14% 34%;
     --ring: 150 80% 45%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 220 15% 16%;
-    --sidebar-foreground: 150 60% 80%;
+    --sidebar-background: 218 16% 26%;
+    --sidebar-foreground: 150 60% 85%;
     --sidebar-primary: 150 80% 45%;
-    --sidebar-primary-foreground: 220 20% 6%;
-    --sidebar-accent: 220 12% 22%;
-    --sidebar-accent-foreground: 150 60% 80%;
-    --sidebar-border: 150 20% 26%;
+    --sidebar-primary-foreground: 218 20% 12%;
+    --sidebar-accent: 218 14% 34%;
+    --sidebar-accent-foreground: 150 60% 85%;
+    --sidebar-border: 216 14% 36%;
     --sidebar-ring: 150 80% 45%;
 
     --font-mono: 'JetBrains Mono', monospace;
