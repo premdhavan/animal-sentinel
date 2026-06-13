@@ -91,7 +91,7 @@ Estimate distance based on the animal's apparent size relative to the frame - la
     });
   } catch (e) {
     console.error("Detection error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
