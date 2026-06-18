@@ -36,24 +36,15 @@ export function useAnimalDetection() {
   ): Promise<DetectionResult> => {
     setIsAnalyzing(true);
     try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/detect-animal`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ imageBase64, nightMode }),
-        }
+      const { data: result, error } = await supabase.functions.invoke<DetectionResult>(
+        "detect-animal",
+        { body: { imageBase64, nightMode } }
       );
 
-      if (!resp.ok) {
-        console.error("Detection error:", await resp.json());
+      if (error || !result) {
+        console.error("Detection error:", error);
         return { detected: false, animal: null, riskLevel: "none", confidence: 0, estimatedDistance: null };
       }
-
-      const result: DetectionResult = await resp.json();
       setCurrentDetection(result);
 
       // Geo-fence check: if location available and zones exist, only alert inside zones
